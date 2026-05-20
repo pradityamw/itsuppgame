@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import SkillTree from '@/components/game/SkillTree';
 import { XPBar, Badge, Card, SectionHeader } from '@/components/ui';
 import { sound } from '@/lib/audio';
+import { signOut } from '@/lib/supabase';
+import { loadGame } from '@/lib/saveSystem';
 
 const AVATARS = ['👨‍💻','👩‍💻','🧑‍💻','👨‍🔧','👩‍🔧','🧑‍🔧','🕵️','👾','🤖','🦾'];
 
@@ -32,15 +34,25 @@ const TOOL_META = {
 };
 
 export default function ProfilePage() {
-  const { t, lang } = useLanguage();
+  const { t, lang, switchLanguage } = useLanguage();
   const { playerName, avatar, level, totalXP, coins, loginStreak, completedMissions,
-          achievements, tools, skills, setPlayerName, setAvatar, getLevelProgress, getRank } = useGameStore();
+          achievements, tools, skills, setPlayerName, setAvatar, getLevelProgress, getRank, hydrate } = useGameStore();
   const router = useRouter();
 
   const [tab, setTab] = useState('stats');
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(playerName);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const handleLogout = async () => {
+    if (window.confirm(t('logoutConfirm') || 'Are you sure you want to log out to switch accounts?')) {
+      sound.click();
+      await signOut();
+      const guestSave = await loadGame();
+      hydrate(guestSave || {}, null);
+      router.push('/');
+    }
+  };
 
   const progress = getLevelProgress();
   const rank = getRank();
@@ -156,26 +168,82 @@ export default function ProfilePage() {
 
           {/* Stats tab */}
           {tab === 'stats' && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: 'Level',     value: level,                        icon: '⭐', color: '#ffe600' },
-                { label: 'Total XP',  value: totalXP.toLocaleString(),     icon: '🔮', color: '#00f5ff' },
-                { label: 'Coins',     value: coins.toLocaleString(),        icon: '🪙', color: '#ffa500' },
-                { label: 'Missions',  value: completedMissions.length,     icon: '✅', color: '#39ff14' },
-                { label: 'Day Streak',value: loginStreak,                  icon: '🔥', color: '#ff6b00' },
-                { label: 'Tools',     value: tools.length,                 icon: '🔧', color: '#bf00ff' },
-                { label: 'Achievements', value: achievements.length,       icon: '🏅', color: '#ff2d78' },
-                { label: 'Skill Pts', value: Object.values(skills).reduce((a,b)=>a+b,0), icon: '💎', color: '#00f5ff' },
-              ].map(stat => (
-                <motion.div key={stat.label} whileHover={{ y: -2 }}
-                  className="rounded-xl p-4 border border-white/5 bg-white/[0.02] text-center">
-                  <div className="text-2xl mb-1">{stat.icon}</div>
-                  <div className="text-xl font-black" style={{ color: stat.color }}>{stat.value}</div>
-                  <div className="text-xs text-white/40">{stat.label}</div>
-                </motion.div>
-              ))}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { label: 'Level',     value: level,                        icon: '⭐', color: '#ffe600' },
+                  { label: 'Total XP',  value: totalXP.toLocaleString(),     icon: '🔮', color: '#00f5ff' },
+                  { label: 'Coins',     value: coins.toLocaleString(),        icon: '🪙', color: '#ffa500' },
+                  { label: 'Missions',  value: completedMissions.length,     icon: '✅', color: '#39ff14' },
+                  { label: 'Day Streak',value: loginStreak,                  icon: '🔥', color: '#ff6b00' },
+                  { label: 'Tools',     value: tools.length,                 icon: '🔧', color: '#bf00ff' },
+                  { label: 'Achievements', value: achievements.length,       icon: '🏅', color: '#ff2d78' },
+                  { label: 'Skill Pts', value: Object.values(skills).reduce((a,b)=>a+b,0), icon: '💎', color: '#00f5ff' },
+                ].map(stat => (
+                  <motion.div key={stat.label} whileHover={{ y: -2 }}
+                    className="rounded-xl p-4 border border-white/5 bg-white/[0.02] text-center">
+                    <div className="text-2xl mb-1">{stat.icon}</div>
+                    <div className="text-xl font-black" style={{ color: stat.color }}>{stat.value}</div>
+                    <div className="text-xs text-white/40">{stat.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* System Settings Card */}
+              <div className="glass rounded-2xl p-5 border border-white/10 space-y-4 mt-2">
+                <SectionHeader title={`⚙️ ${t('settings') || 'System Settings'}`} subtitle={lang === 'en' ? 'Manage your account session and interface language' : 'Kelola sesi akun dan bahasa antarmuka'} />
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Language Toggle Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      sound.click();
+                      switchLanguage(lang === 'en' ? 'id' : 'en');
+                    }}
+                    className="flex items-center justify-between p-4 rounded-xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.06] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🌐</span>
+                      <div className="text-left">
+                        <p className="font-bold text-white text-sm">
+                          {lang === 'en' ? 'Interface Language' : 'Bahasa Antarmuka'}
+                        </p>
+                        <p className="text-xs text-white/40">
+                          {lang === 'en' ? 'Switch interface language' : 'Ubah bahasa tampilan'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-black px-2.5 py-1 rounded bg-[rgba(0,245,255,0.1)] border border-[rgba(0,245,255,0.2)] text-[var(--neon-cyan)]">
+                      {lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'}
+                    </span>
+                  </motion.button>
+
+                  {/* Logout Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleLogout}
+                    className="flex items-center justify-between p-4 rounded-xl border border-[rgba(255,45,120,0.2)] bg-[rgba(255,45,120,0.03)] hover:bg-[rgba(255,45,120,0.08)] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🚪</span>
+                      <div className="text-left">
+                        <p className="font-bold text-white text-sm">{t('logout')}</p>
+                        <p className="text-xs text-white/40">
+                          {lang === 'en' ? 'Sign out to switch accounts' : 'Keluar untuk berganti akun'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 rounded bg-[rgba(255,45,120,0.1)] border border-[var(--neon-pink)]/30 text-[var(--neon-pink)]">
+                      {t('logout')?.toUpperCase()}
+                    </span>
+                  </motion.button>
+                </div>
+              </div>
             </div>
-          )}
+          ) }
 
           {/* Skills tab */}
           {tab === 'skills' && <SkillTree />}

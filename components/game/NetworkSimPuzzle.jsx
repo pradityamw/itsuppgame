@@ -265,6 +265,34 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
 
   const advice = getNetworkDiagnosticAdvice(pingLog, nodes, connections, networkState, lang);
 
+  const handleResetPuzzle = () => {
+    if (window.confirm(t('resetLevelConfirm') || 'Are you sure you want to reset all connections and device positions back to default?')) {
+      sound.click();
+      const freshData = getMappedNetworkPuzzleData(rawPuzzleData);
+      setNodes(
+        freshData.nodes.map(n => ({
+          ...n,
+          powerOn: n.powerOn !== false,
+        }))
+      );
+      setConnections(
+        freshData.connections.map(c => ({
+          ...c,
+          id: c.id || `c_${Math.random().toString(36).substr(2, 9)}`,
+        }))
+      );
+      setActiveTool('pointer');
+      setActiveLinkSource(null);
+      setSelectedNodeId(null);
+      setPortMenu(null);
+      setPingStatus('idle');
+      setPingLog([]);
+      setDragOverNodeId(null);
+      setDragOverPortId(null);
+      setActivePortActionMenu(null);
+    }
+  };
+
   // Drag and Drop States & Handlers
   const [dragOverNodeId, setDragOverNodeId] = useState(null);
   const [dragOverPortId, setDragOverPortId] = useState(null); // { nodeId, portId }
@@ -971,6 +999,14 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
           >
             <span>📖</span>
             <span>{lang === 'id' ? 'Kamus Perangkat' : 'Device Glossary'}</span>
+          </button>
+
+          <button
+            onClick={handleResetPuzzle}
+            className="px-3 py-1.5 rounded-lg border border-[var(--neon-pink)]/30 bg-[rgba(255,45,120,0.08)] text-[var(--neon-pink)] hover:bg-[rgba(255,45,120,0.15)] text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-[0_0_8px_rgba(255,45,120,0.1)]"
+          >
+            <span>🔄</span>
+            <span>{t('resetLevel') || 'Reset Level'}</span>
           </button>
         </div>
 

@@ -5,15 +5,28 @@ import { useLanguage } from '@/context/LanguageContext';
 import { ToastContainer } from '@/components/ui';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signOut } from '@/lib/supabase';
+import { loadGame } from '@/lib/saveSystem';
+import { sound } from '@/lib/audio';
 
 export default function GameHUD() {
-  const { totalXP, coins, loginStreak, activeMission, toasts, removeToast, getLevelProgress, getRank } = useGameStore();
-  const { t, lang } = useLanguage();
+  const { totalXP, coins, loginStreak, activeMission, toasts, removeToast, getLevelProgress, getRank, hydrate } = useGameStore();
+  const { t, lang, switchLanguage } = useLanguage();
   const router = useRouter();
   const [showMission, setShowMission] = useState(true);
 
   const progress = getLevelProgress();
   const rank = getRank();
+
+  const handleLogout = async () => {
+    if (window.confirm(t('logoutConfirm') || 'Are you sure you want to log out to switch accounts?')) {
+      sound.click();
+      await signOut();
+      const guestSave = await loadGame();
+      hydrate(guestSave || {}, null);
+      router.push('/');
+    }
+  };
 
   return (
     <>
@@ -53,7 +66,7 @@ export default function GameHUD() {
             </div>
           </div>
 
-          {/* Right — Coins + Streak */}
+          {/* Right — Coins + Streak + Language Toggle + Logout */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex items-center gap-1">
               <span className="text-sm">🪙</span>
@@ -65,6 +78,33 @@ export default function GameHUD() {
                 <span className="text-xs font-bold text-[var(--neon-orange)]">{loginStreak}</span>
               </div>
             )}
+            
+            <div className="w-px h-4 bg-white/10 mx-1" />
+
+            {/* Language Switch Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                sound.click();
+                switchLanguage(lang === 'en' ? 'id' : 'en');
+              }}
+              className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-[10px] font-black text-white/60 hover:text-white hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.06] transition-all"
+              title={lang === 'en' ? 'Switch to Indonesian' : 'Ubah ke Bahasa Inggris'}
+            >
+              {lang === 'en' ? 'ID' : 'EN'}
+            </motion.button>
+
+            {/* Logout Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleLogout}
+              className="w-7 h-7 rounded-lg border border-[rgba(255,45,120,0.2)] flex items-center justify-center text-xs text-[var(--neon-pink)] hover:text-white hover:bg-[rgba(255,45,120,0.15)] hover:border-[var(--neon-pink)] bg-[rgba(255,45,120,0.05)] transition-all"
+              title={t('logout')}
+            >
+              🚪
+            </motion.button>
           </div>
         </div>
 

@@ -218,6 +218,33 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
     }
   }, [telemetry.success, slots.ram2, puzzleData.scenario]);
 
+  const handleResetPuzzle = () => {
+    if (window.confirm(t('resetLevelConfirm') || 'Are you sure you want to reset all connections and device positions back to default?')) {
+      sound.click();
+      setCaseOpen(false);
+      setPsuSwitchOn(false);
+      setPcPowerButtonActive(false);
+      setSelectedSlotId(null);
+      setActiveTool('inspect');
+      
+      setSlots(
+        puzzleData.slots.reduce((acc, slot) => {
+          const initial = puzzleData.initialHardware?.[slot.id] || { state: 'properly_seated', label: slot.label };
+          acc[slot.id] = initial;
+          return acc;
+        }, {})
+      );
+
+      setCables(
+        Object.keys(CABLE_DETAILS).reduce((acc, cableId) => {
+          const initialConnected = puzzleData.initialCables?.[cableId] !== false;
+          acc[cableId] = { connected: initialConnected };
+          return acc;
+        }, {})
+      );
+    }
+  };
+
   const handleCasePanelClick = () => {
     sound.mechanical();
     setCaseOpen(true);
@@ -349,6 +376,14 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
           >
             <span>📖</span>
             <span>{lang === 'id' ? 'Kamus Komponen' : 'Hardware Glossary'}</span>
+          </button>
+
+          <button
+            onClick={handleResetPuzzle}
+            className="px-3 py-1.5 rounded-lg border border-[var(--neon-pink)]/30 bg-[rgba(255,45,120,0.08)] text-[var(--neon-pink)] hover:bg-[rgba(255,45,120,0.15)] text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-[0_0_8px_rgba(255,45,120,0.1)]"
+          >
+            <span>🔄</span>
+            <span>{t('resetLevel') || 'Reset Level'}</span>
           </button>
         </div>
 

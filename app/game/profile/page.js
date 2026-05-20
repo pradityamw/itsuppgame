@@ -1,12 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useGameStore } from '@/store/gameStore';
 import { useRouter } from 'next/navigation';
 import SkillTree from '@/components/game/SkillTree';
 import { XPBar, Badge, Card, SectionHeader } from '@/components/ui';
-import { sound } from '@/lib/audio';
+import { sound, getMusicState, setMusicVolume, setMusicMuted } from '@/lib/audio';
 import { signOut } from '@/lib/supabase';
 import { loadGame } from '@/lib/saveSystem';
 
@@ -43,6 +43,32 @@ export default function ProfilePage() {
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(playerName);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const [musicMuted, setMusicMutedState] = useState(false);
+  const [musicVol, setMusicVolState] = useState(0.12);
+
+  useEffect(() => {
+    const state = getMusicState();
+    setMusicMutedState(state.isMuted);
+    setMusicVolState(state.volume);
+  }, []);
+
+  const handleToggleMute = () => {
+    sound.click();
+    const newMuted = !musicMuted;
+    setMusicMuted(newMuted);
+    setMusicMutedState(newMuted);
+  };
+
+  const handleVolSlider = (e) => {
+    const val = parseFloat(e.target.value);
+    setMusicVolume(val);
+    setMusicVolState(val);
+    if (val > 0 && musicMuted) {
+      setMusicMuted(false);
+      setMusicMutedState(false);
+    }
+  };
 
   const handleLogout = async () => {
     if (window.confirm(t('logoutConfirm') || 'Are you sure you want to log out to switch accounts?')) {
@@ -219,6 +245,51 @@ export default function ProfilePage() {
                       {lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'}
                     </span>
                   </motion.button>
+
+                  {/* Music Toggle / Volume Slider Card */}
+                  <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/10 bg-white/[0.02]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🎵</span>
+                        <div className="text-left">
+                          <p className="font-bold text-white text-sm">
+                            {lang === 'en' ? 'Background Music' : 'Musik Latar'}
+                          </p>
+                          <p className="text-xs text-white/40">
+                            {lang === 'en' ? 'Synthwave loop track' : 'Lagu loop synthwave'}
+                          </p>
+                        </div>
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleToggleMute}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-all ${
+                          musicMuted
+                            ? 'bg-[rgba(255,45,120,0.1)] border-[var(--neon-pink)]/30 text-[var(--neon-pink)]'
+                            : 'bg-[rgba(0,245,255,0.1)] border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)]'
+                        }`}
+                      >
+                        {musicMuted ? (lang === 'en' ? 'MUTED' : 'SENYAP') : (lang === 'en' ? 'ACTIVE' : 'AKTIF')}
+                      </motion.button>
+                    </div>
+
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-white/30 font-mono">0%</span>
+                      <input
+                        type="range"
+                        min="0"
+                        max="0.4"
+                        step="0.02"
+                        value={musicMuted ? 0 : musicVol}
+                        onChange={handleVolSlider}
+                        className="flex-1 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[var(--neon-cyan)] hover:bg-white/30 transition-all focus:outline-none"
+                      />
+                      <span className="text-xs text-[var(--neon-cyan)] font-mono font-bold">
+                        {Math.round((musicMuted ? 0 : musicVol) * 250)}%
+                      </span>
+                    </div>
+                  </div>
 
                   {/* Logout Button */}
                   <motion.button

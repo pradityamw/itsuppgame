@@ -7,13 +7,40 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/supabase';
 import { loadGame } from '@/lib/saveSystem';
-import { sound } from '@/lib/audio';
+import { sound, getMusicState, setMusicVolume, setMusicMuted } from '@/lib/audio';
+import { useEffect } from 'react';
 
 export default function GameHUD() {
   const { totalXP, coins, loginStreak, activeMission, toasts, removeToast, getLevelProgress, getRank, hydrate } = useGameStore();
   const { t, lang, switchLanguage } = useLanguage();
   const router = useRouter();
   const [showMission, setShowMission] = useState(true);
+
+  const [musicMuted, setMusicMutedState] = useState(false);
+  const [musicVol, setMusicVolState] = useState(0.12);
+
+  useEffect(() => {
+    const state = getMusicState();
+    setMusicMutedState(state.isMuted);
+    setMusicVolState(state.volume);
+  }, []);
+
+  const handleToggleMute = () => {
+    sound.click();
+    const newMuted = !musicMuted;
+    setMusicMuted(newMuted);
+    setMusicMutedState(newMuted);
+  };
+
+  const handleVolSlider = (e) => {
+    const val = parseFloat(e.target.value);
+    setMusicVolume(val);
+    setMusicVolState(val);
+    if (val > 0 && musicMuted) {
+      setMusicMuted(false);
+      setMusicMutedState(false);
+    }
+  };
 
   const progress = getLevelProgress();
   const rank = getRank();
@@ -94,6 +121,29 @@ export default function GameHUD() {
             >
               {lang === 'en' ? 'ID' : 'EN'}
             </motion.button>
+
+            {/* Music Controls */}
+            <div className="flex items-center gap-1.5 bg-white/[0.02] border border-white/10 rounded-lg px-2 py-0.5 h-7">
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={handleToggleMute}
+                className="w-4 h-4 flex items-center justify-center text-[10px] text-white/60 hover:text-[var(--neon-cyan)] transition-colors focus:outline-none"
+                title={musicMuted ? (lang === 'en' ? 'Unmute Music' : 'Nyalakan Lagu') : (lang === 'en' ? 'Mute Music' : 'Matikan Lagu')}
+              >
+                {musicMuted ? '🔇' : '🎵'}
+              </motion.button>
+              <input
+                type="range"
+                min="0"
+                max="0.4"
+                step="0.02"
+                value={musicMuted ? 0 : musicVol}
+                onChange={handleVolSlider}
+                className="w-10 sm:w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[var(--neon-cyan)] hover:bg-white/30 transition-all focus:outline-none"
+                title={lang === 'en' ? `Music Volume: ${Math.round(musicVol * 250)}%` : `Volume Musik: ${Math.round(musicVol * 250)}%`}
+              />
+            </div>
 
             {/* Logout Button */}
             <motion.button

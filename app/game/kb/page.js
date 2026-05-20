@@ -1,6 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGameStore } from '@/store/gameStore';
+import { useLanguage } from '@/context/LanguageContext';
 import { KB_ARTICLES, KB_CATEGORIES, getUnlockedArticles, searchArticles } from '@/lib/knowledgeBase';
 
 // ── Responsive breakpoints (CSS-in-JS) ─────────────────────────
@@ -180,9 +181,8 @@ const CSS = `
 `;
 
 export default function KnowledgeBasePage() {
-  const { state } = useGame();
-  const completedMissions = state?.completedMissions || [];
-  const lang = state?.lang || 'en';
+  const { completedMissions } = useGameStore();
+  const { lang } = useLanguage();
 
   const [query, setQuery]       = useState('');
   const [category, setCategory] = useState('all');

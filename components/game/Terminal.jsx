@@ -125,8 +125,93 @@ Estimated boot improvement: ~${args.length * 8}-${args.length * 12} seconds fast
   cls: () => '__CLEAR__',
 };
 
+const TERMINAL_GLOSSARY = {
+  ping: {
+    title: { en: "ping [host/IP]", id: "ping [host/IP]" },
+    desc: {
+      en: "Tests connectivity between your PC and a remote server (e.g., google.com). Sends ICMP packets and measures response latency in milliseconds.",
+      id: "Menguji konektivitas antara PC Anda dan server tujuan (misal: google.com). Mengirim paket ICMP dan mengukur kecepatan respons dalam milidetik."
+    }
+  },
+  ipconfig: {
+    title: { en: "ipconfig", id: "ipconfig" },
+    desc: {
+      en: "Displays network interface configuration: your IPv4 address, subnet mask, default gateway, and DNS servers. Crucial for checking local network status.",
+      id: "Menampilkan konfigurasi antarmuka jaringan: alamat IPv4 Anda, subnet mask, default gateway, dan server DNS. Sangat penting untuk cek status LAN."
+    }
+  },
+  tracert: {
+    title: { en: "tracert [host/IP]", id: "tracert [host/IP]" },
+    desc: {
+      en: "Traces the path packets take to reach a destination server, listing every intermediate router (hop). Helps find where the connection is breaking.",
+      id: "Melacak rute perjalanan paket data menuju server tujuan, menampilkan setiap router perantara (hop). Membantu mencari titik koneksi yang putus."
+    }
+  },
+  nslookup: {
+    title: { en: "nslookup [domain]", id: "nslookup [domain]" },
+    desc: {
+      en: "Queries DNS servers to resolve a domain name into an IP address. Used to troubleshoot name resolution problems (like 'Server Not Found').",
+      id: "Mengirim kueri ke server DNS untuk mengubah nama domain menjadi alamat IP. Digunakan untuk mendiagnosis masalah resolusi nama domain."
+    }
+  },
+  netstat: {
+    title: { en: "netstat", id: "netstat" },
+    desc: {
+      en: "Displays active network connections, open ports, and listening sockets. Useful to check if programs are actively communicating or if port conflicts exist.",
+      id: "Menampilkan koneksi jaringan yang aktif, port yang terbuka, dan status listening. Berguna untuk memeriksa program yang sedang berkomunikasi."
+    }
+  },
+  tasklist: {
+    title: { en: "tasklist", id: "tasklist" },
+    desc: {
+      en: "Lists all currently running processes in the system along with their Process IDs (PIDs) and memory usage. Used to find resource-heavy or frozen apps.",
+      id: "Menampilkan daftar seluruh proses program yang sedang berjalan saat ini beserta ID Proses (PID) dan penggunaan memori. Membantu mencari program yang macet."
+    }
+  },
+  msconfig: {
+    title: { en: "msconfig", id: "msconfig" },
+    desc: {
+      en: "System Configuration tool. Allows configuring startup services and programs. Disabling unnecessary startup apps helps speed up system booting.",
+      id: "Alat Konfigurasi Sistem. Membantu mengatur program dan layanan yang berjalan otomatis saat komputer menyala (startup) agar booting lebih cepat."
+    }
+  }
+};
+
 export default function Terminal({ mission, onStepComplete, onComplete, onFail, freeMode = false }) {
   const { t, lang } = useLanguage();
+
+  // Onboarding Tutorial & Glossary state
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showGuidebook, setShowGuidebook] = useState(false);
+  const [currentTutorialSlide, setCurrentTutorialSlide] = useState(0);
+
+  const tutorialSlides = [
+    {
+      titleEn: "Welcome to IT Support Terminal! 💻",
+      titleId: "Selamat Datang di Terminal Support IT! 💻",
+      bodyEn: "Here you act as an IT technician configuring systems via command-line interface. Read the active step instruction at the top of the window, type the correct command, and press Enter to execute.",
+      bodyId: "Di sini Anda bertindak sebagai teknisi IT yang mengonfigurasi sistem melalui baris perintah. Baca petunjuk langkah aktif di bagian atas, ketik perintah yang sesuai, dan tekan Enter untuk menjalankan.",
+      tipEn: "Tip: Click any command in the quick-buttons tray at the bottom to auto-fill the prompt!",
+      tipId: "Tips: Klik perintah apa saja di baki tombol cepat di bawah untuk mengisi perintah otomatis!"
+    },
+    {
+      titleEn: "Command History & Shortcuts ⌨️",
+      titleId: "Riwayat Perintah & Jalan Pintas ⌨️",
+      bodyEn: "You don't need to re-type everything! Press the Arrow Up ⬆️ or Arrow Down ⬇️ keys to cycle through previously typed commands in your session history.",
+      bodyId: "Anda tidak perlu mengetik ulang semuanya! Tekan tombol Panah Atas ⬆️ atau Panah Bawah ⬇️ untuk melihat riwayat perintah yang pernah diketik sebelumnya.",
+      tipEn: "Tip: Type 'help' inside the terminal anytime to list all available actions.",
+      tipId: "Tips: Ketik 'help' di dalam terminal kapan saja untuk melihat semua aksi yang didukung."
+    }
+  ];
+
+  useEffect(() => {
+    // Show tutorial automatically for the first play
+    const hasSeenTerminalTutorial = localStorage.getItem('hasSeenTerminalTutorial');
+    if (!hasSeenTerminalTutorial) {
+      setShowTutorial(true);
+      localStorage.setItem('hasSeenTerminalTutorial', 'true');
+    }
+  }, []);
 
   // Support both legacy format (puzzleData.terminalSteps) and new format (terminalData.tasks)
   const terminalData = mission?.terminalData || null;
@@ -209,7 +294,8 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
       } else {
         const hintCmd = currentStep.command || currentStep.expectedCmd || '';
         const hintText = currentStep.hint || `Try: ${hintCmd}`;
-        setTimeout(() => addLine(`💡 Hint: ${hintText}`, 'hint'), 300);
+        const feedback = getTerminalFeedback(trimmed, expectedCmd, hintText, lang);
+        setTimeout(() => addLine(`💡 ${feedback}`, 'hint'), 300);
         setInput('');
         return;
       }
@@ -285,6 +371,25 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
         </motion.div>
       )}
 
+      {/* Guide & Tutorial Buttons */}
+      <div className="flex gap-2 justify-end">
+        <button
+          onClick={() => { sound.click(); setCurrentTutorialSlide(0); setShowTutorial(true); }}
+          className="px-3 py-1.5 rounded-lg border border-[var(--neon-yellow)]/30 bg-[rgba(255,230,0,0.08)] text-[var(--neon-yellow)] hover:bg-[rgba(255,230,0,0.15)] text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-[0_0_8px_rgba(255,230,0,0.1)]"
+        >
+          <span>🎓</span>
+          <span>{lang === 'id' ? 'Tutorial Terminal' : 'Terminal Tutorial'}</span>
+        </button>
+        
+        <button
+          onClick={() => { sound.click(); setShowGuidebook(true); }}
+          className="px-3 py-1.5 rounded-lg border border-[var(--neon-cyan)]/30 bg-[rgba(0,245,255,0.08)] text-[var(--neon-cyan)] hover:bg-[rgba(0,245,255,0.15)] text-xs font-bold font-mono transition-all flex items-center gap-1.5 shadow-[0_0_8px_rgba(0,245,255,0.1)]"
+        >
+          <span>📖</span>
+          <span>{lang === 'id' ? 'Kamus Perintah' : 'Command Glossary'}</span>
+        </button>
+      </div>
+
       {/* Terminal window */}
       <div
         className="terminal rounded-xl overflow-hidden"
@@ -292,7 +397,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
         onClick={() => inputRef.current?.focus()}
       >
         {/* Terminal title bar */}
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-[rgba(57,255,20,0.15)]"
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-b-[rgba(57,255,20,0.15)]"
           style={{ background: 'rgba(0,0,0,0.5)' }}>
           <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
           <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
@@ -349,6 +454,190 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
           </button>
         ))}
       </div>
+
+      {/* Onboarding Tutorial Modal */}
+      {showTutorial && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div
+            className="glass border border-[var(--neon-yellow)] max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl relative"
+            style={{ background: '#070b15' }}
+          >
+            {/* Top title */}
+            <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🎓</span>
+                <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-yellow)]">
+                  {lang === 'id' ? 'Tutorial Onboarding Terminal' : 'Terminal Onboarding Tutorial'}
+                </h3>
+              </div>
+              <button
+                onClick={() => { sound.click(); setShowTutorial(false); }}
+                className="text-white/40 hover:text-white transition-colors font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Slide content */}
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-center py-6 bg-black/40 rounded-xl border border-white/5 text-4xl">
+                {currentTutorialSlide === 0 && '💻'}
+                {currentTutorialSlide === 1 && '⌨️'}
+              </div>
+              <h4 className="font-bold text-white text-base">
+                {lang === 'id' ? tutorialSlides[currentTutorialSlide].titleId : tutorialSlides[currentTutorialSlide].titleEn}
+              </h4>
+              <p className="text-white/70 text-xs leading-relaxed">
+                {lang === 'id' ? tutorialSlides[currentTutorialSlide].bodyId : tutorialSlides[currentTutorialSlide].bodyEn}
+              </p>
+              <div className="bg-[rgba(255,230,0,0.05)] border border-[rgba(255,230,0,0.15)] p-2.5 rounded-lg text-[11px] text-[var(--neon-yellow)] font-medium">
+                {lang === 'id' ? tutorialSlides[currentTutorialSlide].tipId : tutorialSlides[currentTutorialSlide].tipEn}
+              </div>
+            </div>
+
+            {/* Bottom navigation */}
+            <div className="border-t border-white/10 p-4 flex items-center justify-between bg-black/20">
+              <div className="flex gap-1.5">
+                {tutorialSlides.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      idx === currentTutorialSlide ? 'bg-[var(--neon-yellow)] w-4' : 'bg-white/20'
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                {currentTutorialSlide > 0 && (
+                  <button
+                    onClick={() => { sound.click(); setCurrentTutorialSlide(prev => prev - 1); }}
+                    className="px-3 py-1.5 border border-white/10 hover:border-white/20 text-white text-xs font-semibold rounded-lg transition-all"
+                  >
+                    {lang === 'id' ? 'Kembali' : 'Back'}
+                  </button>
+                )}
+                {currentTutorialSlide < tutorialSlides.length - 1 ? (
+                  <button
+                    onClick={() => { sound.click(); setCurrentTutorialSlide(prev => prev + 1); }}
+                    className="btn-game px-4 py-1.5 text-xs font-bold font-mono"
+                    style={{ '--neon-color': 'var(--neon-yellow)' }}
+                  >
+                    {lang === 'id' ? 'Lanjut ➔' : 'Next ➔'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { sound.click(); setShowTutorial(false); }}
+                    className="bg-[var(--neon-green)] border border-[var(--neon-green)] text-black hover:opacity-90 font-bold px-4 py-1.5 text-xs rounded-lg transition-all"
+                  >
+                    {lang === 'id' ? 'Mulai Bermain!' : 'Let\'s Play!'}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Terminal Command Glossary Guidebook Modal */}
+      {showGuidebook && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div
+            className="glass border border-[var(--neon-cyan)] max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[80vh]"
+            style={{ background: '#070b15' }}
+          >
+            {/* Top title */}
+            <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📖</span>
+                <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-cyan)]">
+                  {lang === 'id' ? 'Kamus Perintah Terminal IT' : 'IT Terminal Command Glossary'}
+                </h3>
+              </div>
+              <button
+                onClick={() => { sound.click(); setShowGuidebook(false); }}
+                className="text-white/40 hover:text-white transition-colors font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Glossary list */}
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              <p className="text-xs text-white/50 leading-relaxed mb-2">
+                {lang === 'id'
+                  ? 'Berikut adalah penjelasan perintah-perintah terminal CLI yang akan membantu Anda memecahkan misi.'
+                  : 'Here is an overview of command-line terminal syntax to help you complete the tasks.'}
+              </p>
+
+              <div className="space-y-3.5">
+                {Object.entries(TERMINAL_GLOSSARY).map(([key, item]) => {
+                  return (
+                    <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3.5 rounded-xl transition-all">
+                      <div className="flex items-center gap-2.5 mb-1.5">
+                        <span className="text-lg bg-black/45 px-2.5 py-1.5 rounded-lg border border-white/5 font-mono text-[var(--neon-green)]">
+                          {key}
+                        </span>
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{item.title[lang] || item.title['en']}</h4>
+                        </div>
+                      </div>
+                      <p className="text-white/70 text-xs leading-relaxed font-sans">
+                        {item.desc[lang] || item.desc['en']}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom close */}
+            <div className="border-t border-white/10 p-4 bg-black/20 text-right">
+              <button
+                onClick={() => { sound.click(); setShowGuidebook(false); }}
+                className="btn-game px-5 py-2 text-xs font-bold font-mono"
+                style={{ '--neon-color': 'var(--neon-cyan)' }}
+              >
+                {lang === 'id' ? 'Tutup Kamus' : 'Close Glossary'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function getTerminalFeedback(typed, expectedCmd, hintText, lang) {
+  const isId = lang === 'id';
+  const cleanTyped = typed.trim().toLowerCase();
+  const cleanExpected = expectedCmd.trim().toLowerCase();
+
+  // 1. Spacing check (e.g. ping8.8.8.8 instead of ping 8.8.8.8)
+  const firstWordExpected = cleanExpected.split(' ')[0];
+  if (cleanTyped.startsWith(firstWordExpected) && !cleanTyped.includes(' ') && cleanTyped !== firstWordExpected) {
+    return isId 
+      ? `Perintah '${firstWordExpected}' dan parameternya harus dipisahkan oleh spasi. Contoh: '${expectedCmd}'`
+      : `The command '${firstWordExpected}' and its argument must be separated by a space. E.g., '${expectedCmd}'`;
+  }
+
+  // 2. Wrong utility helper
+  const commonUtilities = ['ping', 'nslookup', 'ipconfig', 'tracert', 'netstat', 'systeminfo', 'gpupdate', 'mkdir', 'cd', 'dir', 'type'];
+  const typedWord = cleanTyped.split(' ')[0];
+  if (commonUtilities.includes(typedWord) && typedWord !== firstWordExpected) {
+    return isId
+      ? `Anda menggunakan perintah '${typedWord}', padahal misi ini meminta Anda untuk menggunakan '${firstWordExpected}'. ${hintText}`
+      : `You entered the '${typedWord}' utility, but this task requires the '${firstWordExpected}' utility. ${hintText}`;
+  }
+
+  // 3. Missing argument helper (e.g. typing "nslookup" without the domain)
+  if (cleanTyped === firstWordExpected && cleanExpected !== firstWordExpected) {
+    return isId
+      ? `Perintah '${firstWordExpected}' memerlukan argumen/parameter target tambahan. ${hintText}`
+      : `The '${firstWordExpected}' command is missing its target argument/parameter. ${hintText}`;
+  }
+
+  // 4. Default hint
+  return isId 
+    ? `Perintah salah. Petunjuk: ${hintText}`
+    : `Incorrect command. Hint: ${hintText}`;
 }

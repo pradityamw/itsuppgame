@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/lib/supabase';
 import { loadGame } from '@/lib/saveSystem';
-import { sound, getMusicState, setMusicVolume, setMusicMuted } from '@/lib/audio';
+import { sound, getMusicState, setMusicVolume, setMusicMuted, setMusicTheme } from '@/lib/audio';
 import { useEffect } from 'react';
 
 export default function GameHUD() {
@@ -18,11 +18,13 @@ export default function GameHUD() {
 
   const [musicMuted, setMusicMutedState] = useState(false);
   const [musicVol, setMusicVolState] = useState(0.12);
+  const [activeTheme, setActiveTheme] = useState('theme1');
 
   useEffect(() => {
     const state = getMusicState();
     setMusicMutedState(state.isMuted);
     setMusicVolState(state.volume);
+    setActiveTheme(state.theme || 'theme1');
   }, []);
 
   const handleToggleMute = () => {
@@ -30,6 +32,16 @@ export default function GameHUD() {
     const newMuted = !musicMuted;
     setMusicMuted(newMuted);
     setMusicMutedState(newMuted);
+  };
+
+  const handleCycleTheme = () => {
+    sound.click();
+    let nextTheme = 'theme1';
+    if (activeTheme === 'theme1') nextTheme = 'theme2';
+    else if (activeTheme === 'theme2') nextTheme = 'theme3';
+    
+    setMusicTheme(nextTheme);
+    setActiveTheme(nextTheme);
   };
 
   const handleVolSlider = (e) => {
@@ -133,6 +145,7 @@ export default function GameHUD() {
               >
                 {musicMuted ? '🔇' : '🎵'}
               </motion.button>
+              
               <input
                 type="range"
                 min="0"
@@ -143,6 +156,23 @@ export default function GameHUD() {
                 className="w-10 sm:w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-[var(--neon-cyan)] hover:bg-white/30 transition-all focus:outline-none"
                 title={lang === 'en' ? `Music Volume: ${Math.round(musicVol * 250)}%` : `Volume Musik: ${Math.round(musicVol * 250)}%`}
               />
+              
+              <div className="w-px h-3 bg-white/10" />
+              
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={handleCycleTheme}
+                className="text-[9px] font-bold text-[var(--neon-cyan)] px-1 rounded hover:bg-white/5 transition-colors flex items-center gap-0.5"
+                title={
+                  lang === 'en'
+                    ? `Theme: ${activeTheme === 'theme1' ? 'Upbeat Mario' : activeTheme === 'theme2' ? 'Cozy Lo-Fi' : 'Cyber Synthwave'} (Click to change)`
+                    : `Tema: ${activeTheme === 'theme1' ? 'Balap Ceria' : activeTheme === 'theme2' ? 'Lo-Fi Santai' : 'Cyber Synthwave'} (Klik untuk mengubah)`
+                }
+              >
+                <span>🎹</span>
+                <span className="font-mono">{activeTheme === 'theme1' ? '1' : activeTheme === 'theme2' ? '2' : '3'}</span>
+              </motion.button>
             </div>
 
             {/* Logout Button */}

@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useRouter } from 'next/navigation';
 import SkillTree from '@/components/game/SkillTree';
 import { XPBar, Badge, Card, SectionHeader } from '@/components/ui';
-import { sound, getMusicState, setMusicVolume, setMusicMuted } from '@/lib/audio';
+import { sound, getMusicState, setMusicVolume, setMusicMuted, setMusicTheme } from '@/lib/audio';
 import { signOut } from '@/lib/supabase';
 import { loadGame } from '@/lib/saveSystem';
 
@@ -46,11 +46,13 @@ export default function ProfilePage() {
 
   const [musicMuted, setMusicMutedState] = useState(false);
   const [musicVol, setMusicVolState] = useState(0.12);
+  const [activeTheme, setActiveTheme] = useState('theme1');
 
   useEffect(() => {
     const state = getMusicState();
     setMusicMutedState(state.isMuted);
     setMusicVolState(state.volume);
+    setActiveTheme(state.theme || 'theme1');
   }, []);
 
   const handleToggleMute = () => {
@@ -241,8 +243,8 @@ export default function ProfilePage() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs font-black px-2.5 py-1 rounded bg-[rgba(0,245,255,0.1)] border border-[rgba(0,245,255,0.2)] text-[var(--neon-cyan)]">
-                      {lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'}
+                    <span className="text-xs font-black px-2.5 py-1 rounded bg-[rgba(0,245,255,0.1)] border border-[var(--neon-cyan)]/30 text-[var(--neon-cyan)]">
+                      {lang.toUpperCase()}
                     </span>
                   </motion.button>
 
@@ -256,7 +258,7 @@ export default function ProfilePage() {
                             {lang === 'en' ? 'Background Music' : 'Musik Latar'}
                           </p>
                           <p className="text-xs text-white/40">
-                            {lang === 'en' ? 'Synthwave loop track' : 'Lagu loop synthwave'}
+                            {lang === 'en' ? 'Select game music theme' : 'Pilih tema musik game'}
                           </p>
                         </div>
                       </div>
@@ -288,6 +290,41 @@ export default function ProfilePage() {
                       <span className="text-xs text-[var(--neon-cyan)] font-mono font-bold">
                         {Math.round((musicMuted ? 0 : musicVol) * 250)}%
                       </span>
+                    </div>
+
+                    <div className="w-full h-px bg-white/5 my-1" />
+
+                    {/* Theme Selector Buttons */}
+                    <div className="flex flex-col gap-1.5">
+                      <p className="text-[10px] uppercase font-bold text-white/40 tracking-wider">
+                        {lang === 'en' ? 'Select Theme Track' : 'Pilih Lagu Tema'}
+                      </p>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { key: 'theme1', labelEn: 'Upbeat Mario', labelId: 'Balap Ceria', icon: '🎹' },
+                          { key: 'theme2', labelEn: 'Cozy Lo-Fi', labelId: 'Lo-Fi Santai', icon: '☕' },
+                          { key: 'theme3', labelEn: 'Cyber Synth', labelId: 'Cyber Synth', icon: '🌌' }
+                        ].map((th) => (
+                          <motion.button
+                            key={th.key}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              sound.click();
+                              setMusicTheme(th.key);
+                              setActiveTheme(th.key);
+                            }}
+                            className={`py-1.5 px-1 rounded-lg border text-[10px] font-bold text-center flex flex-col items-center justify-center gap-1 transition-all ${
+                              activeTheme === th.key
+                                ? 'border-[var(--neon-cyan)] bg-[rgba(0,245,255,0.15)] text-[var(--neon-cyan)]'
+                                : 'border-white/5 hover:border-white/10 bg-white/[0.01] hover:bg-white/[0.04] text-white/50 hover:text-white'
+                            }`}
+                          >
+                            <span className="text-sm">{th.icon}</span>
+                            <span>{lang === 'en' ? th.labelEn : th.labelId}</span>
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

@@ -1034,8 +1034,8 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
           width="100%"
           viewBox="0 0 600 400"
           className="block select-none touch-none"
-          style={{ height: 360 }}
-          onMouseMove={handleMouseMove}
+          style={{ height: 360, touchAction: 'none' }}
+          onPointerMove={handleMouseMove}
           onClick={handleWorkspaceClick}
         >
           {/* Cyber grid background */}
@@ -1281,15 +1281,18 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
                     r={26}
                     fill="transparent"
                     className="cursor-move"
-                    // HTML native drag mapping using delta math
-                    onMouseDown={(e) => {
+                    // Unified pointer/touch drag mapping using delta math
+                    onPointerDown={(e) => {
                       e.stopPropagation();
+                      try {
+                        e.currentTarget.setPointerCapture(e.pointerId);
+                      } catch (err) {}
                       setSelectedNodeId(node.id);
                       
                       let lastX = e.clientX;
                       let lastY = e.clientY;
                       
-                      const handleMouseMoveDrag = (moveEvent) => {
+                      const handlePointerMoveDrag = (moveEvent) => {
                         const deltaX = moveEvent.clientX - lastX;
                         const deltaY = moveEvent.clientY - lastY;
                         
@@ -1299,13 +1302,18 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
                         handleDrag(node.id, { delta: { x: deltaX, y: deltaY } });
                       };
                       
-                      const handleMouseUpDrag = () => {
-                        window.removeEventListener('mousemove', handleMouseMoveDrag);
-                        window.removeEventListener('mouseup', handleMouseUpDrag);
+                      const handlePointerUpDrag = (upEvent) => {
+                        try {
+                          upEvent.target.releasePointerCapture(upEvent.pointerId);
+                        } catch (err) {}
+                        window.removeEventListener('pointermove', handlePointerMoveDrag);
+                        window.removeEventListener('pointerup', handlePointerUpDrag);
+                        window.removeEventListener('pointercancel', handlePointerUpDrag);
                       };
                       
-                      window.addEventListener('mousemove', handleMouseMoveDrag);
-                      window.addEventListener('mouseup', handleMouseUpDrag);
+                      window.addEventListener('pointermove', handlePointerMoveDrag);
+                      window.addEventListener('pointerup', handlePointerUpDrag);
+                      window.addEventListener('pointercancel', handlePointerUpDrag);
                     }}
                   />
                 )}

@@ -167,11 +167,16 @@ export default function PCRepairPanel({ mission, onComplete, onFail }) {
                       key={slot.id}
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={() => handleDrop(slot.id)}
-                      className={`component-slot rounded-lg p-3 transition-all ${
+                      onClick={() => {
+                        if (dragItem) {
+                          handleDrop(slot.id);
+                        }
+                      }}
+                      className={`component-slot rounded-lg p-3 transition-all cursor-pointer ${
                         isError ? 'error border-[var(--neon-pink)]' :
                         placedId ? 'filled' :
                         isFaulty ? 'border-[var(--neon-orange)] bg-[rgba(255,107,0,0.05)]' : ''
-                      }`}
+                      } ${dragItem ? 'hover:bg-white/5 border-dashed border-[var(--neon-cyan)]/40' : ''}`}
                     >
                       {placedId ? (
                         <motion.div
@@ -195,7 +200,7 @@ export default function PCRepairPanel({ mission, onComplete, onFail }) {
                                 🧹 Clean Dust
                               </button>
                             ) : (
-                              <span className="text-[10px] text-[var(--neon-orange)]">← Drop fix here</span>
+                              <span className="text-[10px] text-[var(--neon-orange)]">{dragItem ? '👈 Tap to place' : '← Drop fix here'}</span>
                             )
                           )}
                         </div>
@@ -207,20 +212,30 @@ export default function PCRepairPanel({ mission, onComplete, onFail }) {
 
               {/* Draggable components */}
               <div>
-                <p className="text-xs text-white/40 mb-2">Components to place:</p>
+                <p className="text-xs text-white/40 mb-2">{dragItem ? 'Tap a slot to place, or tap component again to deselect:' : 'Components to place (Drag & Drop or Tap to select):'}</p>
                 <div className="flex flex-wrap gap-2">
                   {puzzleData.components.filter(c => c.broken && !placements[c.correctSlot]).map(comp => {
                     const style = getComponentStyle(comp.id);
+                    const isSelected = dragItem?.id === comp.id;
                     return (
                       <motion.div
                         key={comp.id}
                         draggable
                         onDragStart={() => handleDragStart(comp)}
                         onDragEnd={() => setDragItem(null)}
+                        onClick={() => {
+                          if (isSelected) {
+                            setDragItem(null);
+                          } else {
+                            handleDragStart(comp);
+                          }
+                        }}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="draggable flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold cursor-grab"
-                        style={{ background: style.bg, borderColor: style.border, color: style.border }}
+                        className={`draggable flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold transition-all cursor-pointer ${
+                          isSelected ? 'ring-2 ring-[var(--neon-cyan)] scale-105 shadow-[0_0_15px_rgba(0,245,255,0.4)]' : 'cursor-grab hover:scale-105'
+                        }`}
+                        style={{ background: style.bg, borderColor: isSelected ? 'var(--neon-cyan)' : style.border, color: isSelected ? 'var(--neon-cyan)' : style.border }}
                       >
                         <span>{comp.emoji || style.emoji}</span>
                         {comp.label}

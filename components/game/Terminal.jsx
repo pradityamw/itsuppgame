@@ -181,7 +181,12 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
   const { t, lang } = useLanguage();
 
   // Onboarding Tutorial & Glossary state
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !localStorage.getItem('hasSeenTerminalTutorial');
+    }
+    return false;
+  });
   const [showGuidebook, setShowGuidebook] = useState(false);
   const [currentTutorialSlide, setCurrentTutorialSlide] = useState(0);
 
@@ -205,12 +210,8 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
   ];
 
   useEffect(() => {
-    // Show tutorial automatically for the first play
-    const hasSeenTerminalTutorial = localStorage.getItem('hasSeenTerminalTutorial');
-    if (!hasSeenTerminalTutorial) {
-      setShowTutorial(true);
-      localStorage.setItem('hasSeenTerminalTutorial', 'true');
-    }
+    // Mark tutorial as seen in localStorage on mount
+    localStorage.setItem('hasSeenTerminalTutorial', 'true');
   }, []);
 
   // Support both legacy format (puzzleData.terminalSteps) and new format (terminalData.tasks)
@@ -457,13 +458,13 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
 
       {/* Onboarding Tutorial Modal */}
       {showTutorial && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
           <div
             className="glass border border-[var(--neon-yellow)] max-w-lg w-full rounded-2xl overflow-hidden shadow-2xl relative"
             style={{ background: '#070b15' }}
           >
             {/* Top title */}
-            <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
+            <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
               <div className="flex items-center gap-2">
                 <span className="text-xl">🎓</span>
                 <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-yellow)]">
@@ -479,7 +480,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
             </div>
 
             {/* Slide content */}
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="flex items-center justify-center py-6 bg-black/40 rounded-xl border border-white/5 text-4xl">
                 {currentTutorialSlide === 0 && '💻'}
                 {currentTutorialSlide === 1 && '⌨️'}
@@ -496,7 +497,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
             </div>
 
             {/* Bottom navigation */}
-            <div className="border-t border-white/10 p-4 flex items-center justify-between bg-black/20">
+            <div className="border-t border-white/10 p-3 sm:p-4 flex items-center justify-between bg-black/20">
               <div className="flex gap-1.5">
                 {tutorialSlides.map((_, idx) => (
                   <div
@@ -540,13 +541,13 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
 
       {/* Terminal Command Glossary Guidebook Modal */}
       {showGuidebook && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
           <div
             className="glass border border-[var(--neon-cyan)] max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl relative flex flex-col max-h-[80vh]"
             style={{ background: '#070b15' }}
           >
             {/* Top title */}
-            <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
+            <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
               <div className="flex items-center gap-2">
                 <span className="text-xl">📖</span>
                 <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-cyan)]">
@@ -562,7 +563,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
             </div>
 
             {/* Glossary list */}
-            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
               <p className="text-xs text-white/50 leading-relaxed mb-2">
                 {lang === 'id'
                   ? 'Berikut adalah penjelasan perintah-perintah terminal CLI yang akan membantu Anda memecahkan misi.'
@@ -572,7 +573,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
               <div className="space-y-3.5">
                 {Object.entries(TERMINAL_GLOSSARY).map(([key, item]) => {
                   return (
-                    <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3.5 rounded-xl transition-all">
+                    <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3 sm:p-3.5 rounded-xl transition-all">
                       <div className="flex items-center gap-2.5 mb-1.5">
                         <span className="text-lg bg-black/45 px-2.5 py-1.5 rounded-lg border border-white/5 font-mono text-[var(--neon-green)]">
                           {key}
@@ -591,7 +592,7 @@ export default function Terminal({ mission, onStepComplete, onComplete, onFail, 
             </div>
 
             {/* Bottom close */}
-            <div className="border-t border-white/10 p-4 bg-black/20 text-right">
+            <div className="border-t border-white/10 p-3 sm:p-4 bg-black/20 text-right">
               <button
                 onClick={() => { sound.click(); setShowGuidebook(false); }}
                 className="btn-game px-5 py-2 text-xs font-bold font-mono"

@@ -17,7 +17,7 @@ const NEON = {
 };
 
 // ──────────────────────────────────────────────────────────────
-export default function MissionLearnCarousel({ mission, slides, lang = 'en', onComplete, onSkip }) {
+export default function MissionLearnCarousel({ mission, slides, lang = 'en', onComplete, onSkip, onClose }) {
   const [index, setIndex] = useState(0);
   const [dir, setDir]     = useState(1);
 
@@ -82,6 +82,28 @@ export default function MissionLearnCarousel({ mission, slides, lang = 'en', onC
         }}>
           {/* Label */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {onClose && (
+              <button
+                onClick={onClose}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  padding: '2px 6px',
+                  marginRight: 4,
+                  transition: 'color 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                onMouseEnter={e => e.target.style.color = '#ff2d78'}
+                onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.4)'}
+              >
+                ✕
+              </button>
+            )}
             <span style={{ fontSize: 16 }}>📖</span>
             <span style={{
               fontSize: 11,

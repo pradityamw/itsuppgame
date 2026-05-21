@@ -604,7 +604,11 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
             )}
 
             {/* CPU Socket & Cooler Fan */}
-            <g onClick={(e) => handleSlotInteraction('cpu', e)} className="cursor-pointer">
+            <g
+              onClick={(e) => handleSlotInteraction('cpu', e)}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotInteraction('cpu', e); }}
+              className="cursor-pointer"
+            >
               {(activeHighlightId === 'cpu' || activeHighlightId === 'cooler') && (
                 <rect x="247" y="77" width="86" height="86" fill="none" stroke="[var(--neon-pink)]" strokeWidth="3" rx="5" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 6px [var(--neon-pink)])' }} />
               )}
@@ -631,7 +635,11 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
 
             {/* RAM Slots */}
             {/* Slot A1 */}
-            <g onClick={(e) => handleSlotInteraction('ram1', e)} className="cursor-pointer">
+            <g
+              onClick={(e) => handleSlotInteraction('ram1', e)}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotInteraction('ram1', e); }}
+              className="cursor-pointer"
+            >
               {activeHighlightId === 'ram1' && (
                 <rect x="357" y="77" width="14" height="86" fill="none" stroke="[var(--neon-pink)]" strokeWidth="2.5" rx="2" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 6px [var(--neon-pink)])' }} />
               )}
@@ -655,7 +663,11 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
             </g>
             
             {/* Slot B1 */}
-            <g onClick={(e) => handleSlotInteraction('ram2', e)} className="cursor-pointer">
+            <g
+              onClick={(e) => handleSlotInteraction('ram2', e)}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotInteraction('ram2', e); }}
+              className="cursor-pointer"
+            >
               {activeHighlightId === 'ram2' && (
                 <rect x="377" y="77" width="14" height="86" fill="none" stroke="[var(--neon-pink)]" strokeWidth="2.5" rx="2" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 6px [var(--neon-pink)])' }} />
               )}
@@ -679,7 +691,11 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
             </g>
 
             {/* Graphics Card (GPU) */}
-            <g onClick={(e) => handleSlotInteraction('gpu', e)} className="cursor-pointer">
+            <g
+              onClick={(e) => handleSlotInteraction('gpu', e)}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotInteraction('gpu', e); }}
+              className="cursor-pointer"
+            >
               {activeHighlightId === 'gpu' && (
                 <rect x="197" y="177" width="236" height="42" fill="none" stroke="[var(--neon-pink)]" strokeWidth="2.5" rx="4" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 6px [var(--neon-pink)])' }} />
               )}
@@ -704,7 +720,11 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
             </g>
 
             {/* Storage (SSD) Drive Bay */}
-            <g onClick={(e) => handleSlotInteraction('ssd', e)} className="cursor-pointer">
+            <g
+              onClick={(e) => handleSlotInteraction('ssd', e)}
+              onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleSlotInteraction('ssd', e); }}
+              className="cursor-pointer"
+            >
               {activeHighlightId === 'ssd' && (
                 <rect x="467" y="297" width="76" height="51" fill="none" stroke="[var(--neon-pink)]" strokeWidth="2.5" rx="3" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 6px [var(--neon-pink)])' }} />
               )}
@@ -726,6 +746,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
                   exit={{ x: 500, opacity: 0 }}
                   transition={{ type: 'spring', damping: 20 }}
                   onClick={handleCasePanelClick}
+                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleCasePanelClick(e); }}
                   className="cursor-pointer"
                 >
                   {/* Side panel tinted glass layout */}
@@ -1040,7 +1061,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
       {/* Onboarding Tutorial Modal */}
       <AnimatePresence>
         {showTutorial && (
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1049,7 +1070,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               style={{ background: '#070b15' }}
             >
               {/* Top title */}
-              <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
+              <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🎓</span>
                   <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-yellow)]">
@@ -1065,7 +1086,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               </div>
 
               {/* Slide content */}
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div className="flex items-center justify-center py-6 bg-black/40 rounded-xl border border-white/5 text-4xl">
                   {currentTutorialSlide === 0 && '🖥️'}
                   {currentTutorialSlide === 1 && '🔧'}
@@ -1084,7 +1105,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               </div>
 
               {/* Bottom navigation */}
-              <div className="border-t border-white/10 p-4 flex items-center justify-between bg-black/20">
+              <div className="border-t border-white/10 p-3 sm:p-4 flex items-center justify-between bg-black/20">
                 <div className="flex gap-1.5">
                   {tutorialSlides.map((_, idx) => (
                     <div
@@ -1130,7 +1151,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
       {/* Hardware Component Glossary Guidebook Modal */}
       <AnimatePresence>
         {showGuidebook && (
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1139,7 +1160,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               style={{ background: '#070b15' }}
             >
               {/* Top title */}
-              <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
+              <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">📖</span>
                   <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-cyan)]">
@@ -1155,7 +1176,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               </div>
 
               {/* Glossary list */}
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                 <p className="text-xs text-white/50 leading-relaxed mb-2">
                   {lang === 'id'
                     ? 'Berikut adalah penjelasan komponen perangkat keras komputer yang dipelajari di laboratorium. Klik/lihat peran masing-masing komponen.'
@@ -1165,7 +1186,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
                 <div className="space-y-3.5">
                   {Object.entries(COMPONENT_GLOSSARY).map(([key, item]) => {
                     return (
-                      <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3.5 rounded-xl transition-all">
+                      <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3 sm:p-3.5 rounded-xl transition-all">
                         <div className="flex items-center gap-2.5 mb-1.5">
                           <span className="text-2xl bg-black/45 w-10 h-10 rounded-lg flex items-center justify-center border border-white/5">
                             {key === 'cpu' && '🧠'}
@@ -1209,7 +1230,7 @@ export default function PCRepairSimPuzzle({ mission, onComplete, onFail, activeH
               </div>
 
               {/* Bottom close */}
-              <div className="border-t border-white/10 p-4 bg-black/20 text-right">
+              <div className="border-t border-white/10 p-3 sm:p-4 bg-black/20 text-right">
                 <button
                   onClick={() => { sound.click(); setShowGuidebook(false); }}
                   className="btn-game px-5 py-2 text-xs font-bold font-mono"

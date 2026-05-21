@@ -164,7 +164,7 @@ function MainMenuContent() {
   const handlePlay = () => {
     sound.click();
     if (hasSave) {
-      router.push('/game');
+      router.push('/game/rpg');
     } else {
       router.push('/auth');
     }
@@ -272,7 +272,7 @@ function MainMenuContent() {
           {/* Guest mode */}
           {!hasSave && (
             <button
-              onClick={() => { sound.click(); router.push('/game'); }}
+              onClick={() => { sound.click(); router.push('/game/rpg'); }}
               className="w-full py-3 text-xs text-white/30 hover:text-white/60 transition-colors"
             >
               {t('guestPlay')} →

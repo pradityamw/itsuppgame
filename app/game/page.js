@@ -16,9 +16,10 @@ const NAV_ITEMS = [
 ];
 
 const GAME_MODES = [
+  { key: 'rpg',       icon: '🎮',  label: '2D RPG World [NEW]', labelId: 'Dunia RPG 2D [BARU]', desc: 'Immersive exploration & support', descId: 'Eksplorasi & support imersif', path: '/game/rpg',       color: '#39ff14' },
   { key: 'adventure', icon: '⚔️',  label: 'Adventure Mode',  labelId: 'Mode Petualangan',  desc: 'Story missions & exploration', descId: 'Misi cerita & eksplorasi', path: '/game/adventure', color: '#00f5ff' },
   { key: 'workshop',  icon: '🔧',  label: 'Workshop',         labelId: 'Workshop',           desc: 'PC repair practice',          descId: 'Latihan perbaikan PC',   path: '/game/workshop',  color: '#ff6b00' },
-  { key: 'daily',     icon: '📅',  label: 'Daily Tasks',      labelId: 'Tugas Harian',       desc: 'Quick daily challenges',      descId: 'Tantangan cepat harian', path: '/game/daily',     color: '#39ff14' },
+  { key: 'daily',     icon: '📅',  label: 'Daily Tasks',      labelId: 'Tugas Harian',       desc: 'Quick daily challenges',      descId: 'Tantangan cepat harian', path: '/game/daily',     color: '#ffe600' }, // changed color slightly for variety
   { key: 'profile',   icon: '👤',  label: 'My Profile',       labelId: 'Profil Saya',        desc: 'Skills, achievements, stats', descId: 'Keahlian & pencapaian',  path: '/game/profile',   color: '#bf00ff' },
 ];
 
@@ -100,7 +101,7 @@ export default function GameHubPage() {
         transition={{ duration: 0.2 }}
       >
         {activeTab === 'map' && (
-          <MapExplorer onSelectArea={(area) => router.push(`/game/adventure?area=${area.key}`)} />
+          <MapExplorer onSelectArea={(area) => router.push(`/game/rpg?area=${area.key}`)} />
         )}
 
         {activeTab === 'daily' && (

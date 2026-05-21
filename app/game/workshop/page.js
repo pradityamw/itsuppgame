@@ -372,7 +372,7 @@ export default function WorkshopPage() {
       {/* COMBINED GLOSSARY MODAL */}
       <AnimatePresence>
         {showGlossary && (
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -381,7 +381,7 @@ export default function WorkshopPage() {
               style={{ background: '#070b15' }}
             >
               {/* Header */}
-              <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
+              <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">📖</span>
                   <h3 className="font-orbitron font-black text-xs uppercase tracking-widest text-[var(--neon-cyan)]">
@@ -406,7 +406,7 @@ export default function WorkshopPage() {
                       : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
-                  🖥️ {lang === 'id' ? 'Komponen Perangkat PC' : 'PC Hardware Components'}
+                  🖥️ {lang === 'id' ? 'Komponen Perangkat PC' : 'PC Hardware'}
                 </button>
                 <button
                   onClick={() => { sound.click(); setGlossaryTab('network'); }}
@@ -416,15 +416,15 @@ export default function WorkshopPage() {
                       : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
-                  📶 {lang === 'id' ? 'Perangkat Jaringan' : 'Networking Devices'}
+                  📶 {lang === 'id' ? 'Perangkat Jaringan' : 'Networking'}
                 </button>
               </div>
 
               {/* List */}
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                <div className="space-y-4">
+              <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
+                <div className="space-y-3 sm:space-y-4">
                   {GLOSSARY_DATA[glossaryTab].map((item, idx) => (
-                    <div key={idx} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-4 rounded-xl transition-all">
+                    <div key={idx} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3 sm:p-4 rounded-xl transition-all">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="text-2xl bg-black/45 w-10 h-10 rounded-lg flex items-center justify-center border border-white/5">
                           {item.emoji}
@@ -463,7 +463,7 @@ export default function WorkshopPage() {
               </div>
 
               {/* Close */}
-              <div className="border-t border-white/10 p-4 bg-black/20 text-right">
+              <div className="border-t border-white/10 p-3 sm:p-4 bg-black/20 text-right">
                 <button
                   onClick={() => { sound.click(); setShowGlossary(false); }}
                   className="btn-game px-5 py-2 text-xs font-bold font-mono"

@@ -637,8 +637,10 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
 
     // Cable Drawing Mode
     const bounds = svgRef.current.getBoundingClientRect();
-    const x = e.clientX - bounds.left;
-    const y = e.clientY - bounds.top;
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? 0;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? e.changedTouches?.[0]?.clientY ?? 0;
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
 
     const node = nodes.find(n => n.id === nodeId);
     const template = DEVICE_TEMPLATES[node.type];
@@ -741,9 +743,12 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
     if (!activeLinkSource || !svgRef.current) return;
     const bounds = svgRef.current.getBoundingClientRect();
     
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? 0;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? e.changedTouches?.[0]?.clientY ?? 0;
+    
     // Convert client coordinates to SVG coordinates (0-600, 0-400)
-    const x = ((e.clientX - bounds.left) / bounds.width) * 600;
-    const y = ((e.clientY - bounds.top) / bounds.height) * 400;
+    const x = ((clientX - bounds.left) / bounds.width) * 600;
+    const y = ((clientY - bounds.top) / bounds.height) * 400;
     setMousePos({ x, y });
   };
 
@@ -1068,7 +1073,12 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
                                   activeHighlightId === `c_${conn.to}_to_${conn.from}`;
 
             return (
-              <g key={conn.id} onClick={(e) => handleCableClick(conn.id, e)} className="cursor-pointer group">
+              <g
+                key={conn.id}
+                onClick={(e) => handleCableClick(conn.id, e)}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleCableClick(conn.id, e); }}
+                className="cursor-pointer group"
+              >
                 {/* Thick hover/click boundary */}
                 <path
                   d={`M ${fromNode.x} ${fromNode.y} Q ${midX} ${midY} ${toNode.x} ${toNode.y}`}
@@ -1162,6 +1172,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
                 key={node.id}
                 transform={`translate(0, 0)`}
                 onClick={(e) => handleDeviceClick(node.id, e)}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); handleDeviceClick(node.id, e); }}
                 style={{ cursor: activeTool === 'pointer' ? 'move' : 'pointer' }}
                 className="group"
                 onDragOver={(e) => {
@@ -1692,7 +1703,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
       {/* Onboarding Tutorial Modal */}
       <AnimatePresence>
         {showTutorial && (
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1701,7 +1712,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               style={{ background: '#070b15' }}
             >
               {/* Top title */}
-              <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
+              <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(255,230,0,0.03)]">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🎓</span>
                   <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-yellow)]">
@@ -1717,7 +1728,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               </div>
 
               {/* Slide content */}
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div className="flex items-center justify-center py-6 bg-black/40 rounded-xl border border-white/5 text-4xl">
                   {currentTutorialSlide === 0 && '🌐'}
                   {currentTutorialSlide === 1 && '🔌'}
@@ -1737,7 +1748,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               </div>
 
               {/* Bottom navigation */}
-              <div className="border-t border-white/10 p-4 flex items-center justify-between bg-black/20">
+              <div className="border-t border-white/10 p-3 sm:p-4 flex items-center justify-between bg-black/20">
                 <div className="flex gap-1.5">
                   {tutorialSlides.map((_, idx) => (
                     <div
@@ -1783,7 +1794,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
       {/* Device Glossary Guidebook Modal */}
       <AnimatePresence>
         {showGuidebook && (
-          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1792,7 +1803,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               style={{ background: '#070b15' }}
             >
               {/* Top title */}
-              <div className="border-b border-white/10 p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
+              <div className="border-b border-white/10 p-3 sm:p-4 flex items-center justify-between bg-[rgba(0,245,255,0.03)]">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">📖</span>
                   <h3 className="font-orbitron font-black text-[10px] uppercase tracking-widest text-[var(--neon-cyan)]">
@@ -1808,7 +1819,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               </div>
 
               {/* Glossary list */}
-              <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="p-3 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                 <p className="text-xs text-white/50 leading-relaxed mb-2">
                   {lang === 'id'
                     ? 'Berikut adalah penjelasan perangkat jaringan yang akan Anda temui dalam simulasi. Klik salah satu untuk membaca perannya.'
@@ -1819,7 +1830,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
                   {Object.entries(DEVICE_GLOSSARY).map(([key, item]) => {
                     const devTemplate = DEVICE_TEMPLATES[key] || {};
                     return (
-                      <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3.5 rounded-xl transition-all">
+                      <div key={key} className="bg-white/[0.02] border border-white/5 hover:border-white/10 p-3 sm:p-3.5 rounded-xl transition-all">
                         <div className="flex items-center gap-2.5 mb-1.5">
                           <span className="text-2xl bg-black/45 w-10 h-10 rounded-lg flex items-center justify-center border border-white/5">
                             {devTemplate.emoji || '🌐'}
@@ -1858,7 +1869,7 @@ export default function NetworkSimPuzzle({ mission, onComplete, onFail, activeHi
               </div>
 
               {/* Bottom close */}
-              <div className="border-t border-white/10 p-4 bg-black/20 text-right">
+              <div className="border-t border-white/10 p-3 sm:p-4 bg-black/20 text-right">
                 <button
                   onClick={() => { sound.click(); setShowGuidebook(false); }}
                   className="btn-game px-5 py-2 text-xs font-bold font-mono"

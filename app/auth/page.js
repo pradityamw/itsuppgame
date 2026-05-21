@@ -38,7 +38,7 @@ function AuthContent() {
           const save = await loadGame(data.user.id);
           hydrate(save, data.user);
         }
-        setTimeout(() => router.push('/game'), 1500);
+        setTimeout(() => router.push('/game/rpg'), 1500);
       } else {
         const { data, error: err } = await signIn(email, password);
         if (err) throw err;
@@ -48,7 +48,7 @@ function AuthContent() {
           const save = await loadGame(data.user.id);
           hydrate(save, data.user);
         }
-        router.push('/game');
+        router.push('/game/rpg');
       }
     } catch (err) {
       sound.wrong();
@@ -62,7 +62,7 @@ function AuthContent() {
     sound.click();
     loadGame().then(save => {
       hydrate(save || {});
-      router.push('/game');
+      router.push('/game/rpg');
     });
   };
 

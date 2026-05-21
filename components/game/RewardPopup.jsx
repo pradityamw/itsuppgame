@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sound } from '@/lib/audio';
 import { useLanguage } from '@/context/LanguageContext';
@@ -11,6 +11,7 @@ const PARTICLE_COUNT = 18;
 export default function RewardPopup({ data, onDismiss }) {
   const { t } = useLanguage();
   const { getLevelProgress, getRank } = useGameStore();
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
     if (data) {
@@ -18,6 +19,17 @@ export default function RewardPopup({ data, onDismiss }) {
       setTimeout(() => sound.xpGain(), 600);
       if (data.coinReward) setTimeout(() => sound.coin(), 900);
       if (data.toolUnlock) setTimeout(() => sound.achievement(), 1200);
+
+      // Generate confetti particles on mount / data change inside the effect to keep rendering pure
+      const generated = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        delay: Math.random() * 0.6,
+        duration: 1.2 + Math.random() * 0.8,
+        color: ['#00f5ff', '#bf00ff', '#39ff14', '#ff6b00', '#ffe600', '#ff2d78'][i % 6],
+        size: 6 + Math.random() * 10,
+      }));
+      setParticles(generated);
     }
   }, [data]);
 
@@ -25,16 +37,6 @@ export default function RewardPopup({ data, onDismiss }) {
 
   const progress = getLevelProgress();
   const rank = getRank();
-
-  // Generate confetti particles
-  const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.6,
-    duration: 1.2 + Math.random() * 0.8,
-    color: ['#00f5ff', '#bf00ff', '#39ff14', '#ff6b00', '#ffe600', '#ff2d78'][i % 6],
-    size: 6 + Math.random() * 10,
-  }));
 
   return (
     <AnimatePresence>

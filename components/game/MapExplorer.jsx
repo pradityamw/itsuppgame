@@ -238,7 +238,7 @@ export default function MapExplorer({ onSelectArea }) {
                 <p className="text-xs text-white/40 mt-0.5">{area.missionCount} missions · Min Level {area.requiredLevel}</p>
               </div>
               <button
-                onClick={() => router.push(`/game/adventure?area=${area.key}`)}
+                onClick={() => router.push(`/game/rpg?area=${area.key}`)}
                 className="text-sm font-bold py-2 px-4 rounded-lg transition-all hover:scale-105"
                 style={{ background: `${nodeColor}20`, color: nodeColor, border: `1px solid ${nodeColor}40` }}
               >
